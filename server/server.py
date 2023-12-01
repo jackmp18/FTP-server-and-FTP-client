@@ -1,8 +1,22 @@
 import socket
 import os
+import sys
 
 # The port on which to listen
-listenPort = 1234
+if len(sys.argv) != 2:
+    print("Usage: python server.py <portnumber>")
+    sys.exit(1)
+
+try:
+    listenPort = int(sys.argv[1])
+except ValueError:
+    print("Please provide a valid port number.")
+    sys.exit(1)
+
+# Ensure the provided port number is within the valid range of 0-65535
+if not (0 <= listenPort <= 65535):
+    print("Port number must be in the range 0-65535.")
+    sys.exit(1)
 
 # Create a welcome socket.
 welcomeSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

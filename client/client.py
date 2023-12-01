@@ -1,5 +1,6 @@
 import socket
 import os
+import sys
 
 def recvAll(sock, numBytes):
     # The buffer to all data received from the client.
@@ -20,11 +21,23 @@ def recvAll(sock, numBytes):
     
     return recvBuff
 
-# Server address
-serverAddr = "localhost"
+# Server port and address
+if len(sys.argv) != 3:
+    print("Usage: python client.py <serveraddress> <portnumber>")
+    sys.exit(1)
 
-# Server port
-serverPort = 1234
+serverAddr = sys.argv[1]
+
+try:
+    serverPort = int(sys.argv[2])
+except ValueError:
+    print("Please provide a valid port number.")
+    sys.exit(1)
+
+# Ensure the provided port number is within the valid range of 1-65535
+if not (1 <= serverPort <= 65535):
+    print("Port number must be in the range 1-65535.")
+    sys.exit(1)
 
 # Create a TCP socket for the control connection
 controlSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
