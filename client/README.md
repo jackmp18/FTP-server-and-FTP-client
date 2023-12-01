@@ -1,8 +1,7 @@
 Alex Nguyen
 Serafina Yu
 Jack Page
-Timothy Bryant JR
-Michael Martinez
+Terry Ma
 
 To execute the programs:
 
