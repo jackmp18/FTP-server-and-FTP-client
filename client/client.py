@@ -21,7 +21,7 @@ def recvAll(sock, numBytes):
     
     return recvBuff
 
-# Command line checks
+# make sure there's 3 command line arguments
 if len(sys.argv) != 3:
     print("Usage: python client.py <serveraddress> <portnumber>")
     sys.exit(1)
@@ -48,7 +48,7 @@ controlSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 controlSock.connect((serverAddr, serverPort))
 
 # Create data connections with ephemeral ports to  
-# listen for ls, get, put, or exit commands
+# listen for ls, get, put, or quit commands
 while True:
     command = input("ftp> ")
     split_command = command.split()
@@ -83,7 +83,7 @@ while True:
 
             # Send the file data over the data connection
             dataSock.sendall(fileData)
-            print(f"Sent {len(fileData)} bytes over the data connection.")
+            print(f"Sent {fileName} with size {len(fileData)} to the server.")
 
             # Close the data connection
             dataSock.close()
@@ -141,7 +141,7 @@ while True:
             dataSock.close()
         else:
             print(serverResponse)  # Print the file not found message or any other message
-    elif split_command[0] == "exit":
+    elif split_command[0] == "quit":
         controlSock.send(command.encode())
         break
     else:

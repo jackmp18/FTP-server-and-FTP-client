@@ -62,7 +62,7 @@ while True:
     while True:
         # Get the command from the client
         command = clientSock.recv(1024).decode()
-        if not command or command == "exit":
+        if not command or command == "quit":
             break  
         
         split_command = command.split()
@@ -84,8 +84,6 @@ while True:
             fileSizeBuff = recvAll(dataConn, 10)
             fileSize = int(fileSizeBuff)
             
-            print("The file size is {} bytes".format(fileSize))
-            
             # Receive the file data from the client
             fileData = recvAll(dataConn, fileSize)
             
@@ -93,7 +91,7 @@ while True:
             with open(split_command[1], 'wb') as file:
                 file.write(fileData)
             
-            print(f"The file data is: {split_command[1]}")
+            print(f"SUCCESS: Received {split_command[1]} from the client with the 'put' command")
             
             # Close the data connection
             dataConn.close()
@@ -119,7 +117,7 @@ while True:
             # Send the list of files to the client
             dataConn.sendall(files_list)
 
-            print("Sent list of files.")
+            print("SUCCESS: received 'ls' command and sent list of files.")
 
             # Close the data connection
             dataConn.close()
@@ -156,7 +154,7 @@ while True:
                 # Send the file data over the data connection
                 dataConn.sendall(fileData)
 
-                print(f"Sent {split_command[1]} to the client.")
+                print(f"SUCCESS: Received 'get' command and sent {split_command[1]} to the client.")
 
                 # Close the data connection
                 dataConn.close()
