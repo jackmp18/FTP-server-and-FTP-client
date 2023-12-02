@@ -21,36 +21,40 @@ def recvAll(sock, numBytes):
     
     return recvBuff
 
-# Server port and address
+# Command line checks
 if len(sys.argv) != 3:
     print("Usage: python client.py <serveraddress> <portnumber>")
     sys.exit(1)
 
+# Server address
 serverAddr = sys.argv[1]
 
+# Server port
 try:
     serverPort = int(sys.argv[2])
 except ValueError:
-    print("Please provide a valid port number.")
+    print("Please enter a port number.")
     sys.exit(1)
 
-# Ensure the provided port number is within the valid range of 1-65535
-if not (1 <= serverPort <= 65535):
+# Check if port number is in range
+if serverPort not in range(1, 65536):
     print("Port number must be in the range 1-65535.")
     sys.exit(1)
 
-# Create a TCP socket for the control connection
+# Create a TCP socket (control connection)
 controlSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connect to the server
 controlSock.connect((serverAddr, serverPort))
 
-# Wait for user input and handle commands
+# Create data connections with ephemeral ports to  
+# listen for ls, get, put, or exit commands
 while True:
     command = input("ftp> ")
-    cmd_parts = command.split()
-    if cmd_parts[0] == "put" and len(cmd_parts) > 1:
-        fileName = cmd_parts[1]
+    split_command = command.split()
+
+    if split_command[0] == "put" and len(split_command) == 2:
+        fileName = split_command[1]
         if os.path.isfile(fileName):
             # Send the put command to the server
             controlSock.send(command.encode())
@@ -69,6 +73,7 @@ while True:
 
             # Get the size of the data read and convert it to string
             dataSizeStr = str(len(fileData))
+
             # Prepend 0's to the size string until the size is 10 bytes
             while len(dataSizeStr) < 10:
                 dataSizeStr = "0" + dataSizeStr
@@ -85,7 +90,7 @@ while True:
         else:
             print("File not found.")
             
-    elif cmd_parts[0].lower() == "ls":
+    elif split_command[0] == "ls":
         # Send the ls command to the server
         controlSock.send(command.encode())
 
@@ -103,7 +108,7 @@ while True:
         # Close the data connection
         dataSock.close()
         
-    elif cmd_parts[0].lower() == "get" and len(cmd_parts) > 1:
+    elif split_command[0] == "get" and len(split_command) == 2:
         # Send the get command to the server
         controlSock.send(command.encode())
 
@@ -127,16 +132,16 @@ while True:
             fileData = recvAll(dataSock, fileSize)
 
             # Save the file data to a file
-            with open(cmd_parts[1], 'wb') as file:
+            with open(split_command[1], 'wb') as file:
                 file.write(fileData)
 
-            print(f"Received and saved file as {cmd_parts[1]}")
+            print(f"Received and saved file as {split_command[1]}")
 
             # Close the data connection
             dataSock.close()
         else:
             print(serverResponse)  # Print the file not found message or any other message
-    elif cmd_parts[0] == "exit":
+    elif split_command[0] == "exit":
         controlSock.send(command.encode())
         break
     else:

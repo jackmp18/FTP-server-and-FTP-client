@@ -10,11 +10,11 @@ if len(sys.argv) != 2:
 try:
     listenPort = int(sys.argv[1])
 except ValueError:
-    print("Please provide a valid port number.")
+    print("Please input a port number.")
     sys.exit(1)
 
 # Ensure the provided port number is within the valid range of 0-65535
-if not (0 <= listenPort <= 65535):
+if listenPort not in range(0, 65536):
     print("Port number must be in the range 0-65535.")
     sys.exit(1)
 
@@ -62,12 +62,12 @@ while True:
     while True:
         # Get the command from the client
         command = clientSock.recv(1024).decode()
-        if not command or command.lower() == "exit":
-            break  # Exit the loop and wait for a new connection
+        if not command or command == "exit":
+            break  
         
-        cmd_parts = command.split()
+        split_command = command.split()
         
-        if cmd_parts[0] == "put" and len(cmd_parts) > 1:
+        if split_command[0] == "put" and len(split_command) == 2:
             # Generate an ephemeral port for data transfer
             dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             dataSock.bind(('', 0)) # Bind to any available port
@@ -84,22 +84,22 @@ while True:
             fileSizeBuff = recvAll(dataConn, 10)
             fileSize = int(fileSizeBuff)
             
-            print("Receiving file of size {} bytes".format(fileSize))
+            print("The file size is {} bytes".format(fileSize))
             
             # Receive the file data from the client
             fileData = recvAll(dataConn, fileSize)
             
             # Save the file data using the name provided by the client
-            with open(cmd_parts[1], 'wb') as file:
+            with open(split_command[1], 'wb') as file:
                 file.write(fileData)
             
-            print(f"Received file data and saved as {cmd_parts[1]}")
+            print(f"The file data is: {split_command[1]}")
             
             # Close the data connection
             dataConn.close()
             dataSock.close()
 
-        elif cmd_parts[0].lower() == "ls":
+        elif split_command[0] == "ls":
             # Generate an ephemeral port for data transfer
             dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             dataSock.bind(('', 0))  # Bind to any available port
@@ -125,9 +125,9 @@ while True:
             dataConn.close()
             dataSock.close()
         
-        elif cmd_parts[0].lower() == "get" and len(cmd_parts) > 1:
+        elif split_command[0] == "get" and len(split_command) == 2:
             # Check if the requested file exists
-            if os.path.isfile(cmd_parts[1]):
+            if os.path.isfile(split_command[1]):
                 # Generate an ephemeral port for data transfer
                 dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 dataSock.bind(('', 0))  # Bind to any available port
@@ -141,7 +141,7 @@ while True:
                 dataConn, _ = dataSock.accept()
 
                 # Open and read the file
-                with open(cmd_parts[1], 'rb') as file:
+                with open(split_command[1], 'rb') as file:
                     fileData = file.read()
 
                 # Get the size of the data read and convert it to string
@@ -156,7 +156,7 @@ while True:
                 # Send the file data over the data connection
                 dataConn.sendall(fileData)
 
-                print(f"Sent {cmd_parts[1]} to the client.")
+                print(f"Sent {split_command[1]} to the client.")
 
                 # Close the data connection
                 dataConn.close()
